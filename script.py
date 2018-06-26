@@ -17,7 +17,7 @@ def MLPRegressor(X_train, X_test, y_train, y_test):
 		model.append(neural_network.MLPRegressor(hidden_layer_sizes=(100, ),max_iter=1000))
 		model[i].fit(X_train,y_train)
 		y_pred = model[i].predict(X_test)
-		error.append(np.sqrt(r2_score(y_pred, y_test)))
+		error.append(np.sqrt(mean_squared_error(y_pred, y_test)))
 		
 	print("RMSE: %.5f" % np.mean(error))
 	return model[np.argmin(error)]
@@ -27,7 +27,7 @@ def LinearRegression(X_train, X_test, y_train, y_test):
 	reg = linear_model.LinearRegression()
 	reg.fit(X_train,y_train)
 	y_pred = reg.predict(X_test)
-	print("RMSE: %.5f" % np.sqrt(r2_score(y_pred, y_test)))
+	print("RMSE: %.5f" % np.sqrt(mean_squared_error(y_pred, y_test)))
 
 	return reg
 
@@ -49,13 +49,13 @@ def show_plot(data):
 def main():
 	file = pd.read_csv('input/daily_adjusted_EWZ.csv')
 	file = file.sort_values(by='timestamp', ascending=True)
-	show_plot(file)
+	#show_plot(file)
 	close_tomorrow = file['close'][1:]	
 	close_tomorrow = pd.Series(close_tomorrow)
 	#print	file['close']
 	file = file[:-1] # remove last line 
 	#print	file['close']
-	print close_tomorrow[:5]
+	print(close_tomorrow[:5])
 	file['close_tomorrow'] = 0
 	print("TAM CLOSE TOMORROW: "+str(len(close_tomorrow)))
 	print("TAM CLOSE: "+str(len(file['close'])))
@@ -63,14 +63,14 @@ def main():
 	#	file['close_tomorrow'] = close_tomorrow
 
 	file = file.assign(close_tomorrow=close_tomorrow.values)
-	y = file['close'].values
-	file = file.drop(['volume','dividend_amount', 'adjusted_close','split_coefficient'], axis=1)
+	y = file['close_tomorrow'].values
+	file = file.drop(['timestamp', 'volume','dividend_amount', 'adjusted_close','close_tomorrow','split_coefficient'], axis=1)
 	dataset = file.values
 	#dataset = dataset.astype('float32')
 	print("yMAX: ",max(y))
 	y = y/max(y)
 
-	print file
+	print(file)
 	
 	#scaler = MinMaxScaler(feature_range=(0, 1))
 	#scaler = scaler.fit(dataset)
@@ -79,10 +79,10 @@ def main():
 	#dataset = scaler.transform(dataset)
 	#print(dataset)
 
-	#X_train, X_test, y_train, y_test = train_test_split(dataset, y, test_size=0.50, random_state=42)
+	X_train, X_test, y_train, y_test = train_test_split(dataset, y, test_size=0.50, random_state=42)
 
-	#MLPRegressor(X_train, X_test, y_train, y_test)
-	#LinearRegression(X_train, X_test, y_train, y_test)
+	MLPRegressor(X_train, X_test, y_train, y_test)
+	LinearRegression(X_train, X_test, y_train, y_test)
 
 
 if __name__ == "__main__":
